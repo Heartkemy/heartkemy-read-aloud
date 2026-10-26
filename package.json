@@ -1,0 +1,13 @@
+{
+  "name": "heartkemy-read-aloud-manual-beta",
+  "version": "0.1.1",
+  "private": true,
+  "description": "Local npm metadata for the Heartkemy Read Aloud manual desktop beta; this package is not published.",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node test.mjs",
+    "test:install": "node test-install.mjs"
+  }
+}

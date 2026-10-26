@@ -1,0 +1,241 @@
+/* Read Aloud — Obsidian's side of the styling only.
+ *
+ * The player's own stylesheet is NOT copied here. It is read from the library on
+ * disk at load and injected alongside this file (see `injectStyles` in main.js),
+ * so the widget you polished in modicom and trading-analysis is the same widget
+ * here, and improving it upstream improves it here without a second copy to
+ * keep in step. This file itself is injected the same way, so the plugin's look
+ * does not depend on Obsidian's plugin-CSS loader following the symlinked
+ * plugin directory.
+ *
+ * What lives in this file: the `--ra-*` token mapping onto Obsidian's theme
+ * variables, and the heading button, which is Obsidian-specific.
+ */
+
+.theme-light,
+.theme-dark,
+body {
+  /* Prefer the accent system's solid colour. --interactive-accent is the
+     *rendered* accent, and a theme may make it translucent (this vault's dark
+     theme sets it to rgba(…, 0.5)) — a scrubber thumb and progress fill at half
+     alpha read as broken. --color-accent is the same hue, opaque. */
+  --ra-accent: var(--color-accent, var(--interactive-accent));
+  --ra-accent-ink: var(--text-on-accent);
+  --ra-fg: var(--text-normal);
+  --ra-muted: var(--text-muted);
+  --ra-surface: var(--background-secondary);
+  --ra-sunken: var(--background-modifier-border);
+  --ra-shadow: var(--shadow-l);
+  --ra-shadow-idle: var(--shadow-s);
+  --ra-radius: 999px;
+  --ra-radius-card: var(--radius-m);
+  --ra-focus: var(--interactive-accent);
+}
+
+/* Above Obsidian's own chrome, below its modals. */
+.ra-player--fixed {
+  --ra-player-z: var(--layer-popover);
+}
+
+/* Obsidian's mobile/sidebar layout means the viewport corner is not always the
+   right corner; dock to the workspace leaf instead of the window. */
+.ra-player--fixed {
+  position: fixed;
+  right: calc(16px + var(--ra-inset-right, 0px));
+  bottom: calc(16px + var(--ra-inset-bottom, 0px));
+}
+
+/* ---------------------------------------------------------------------------
+ * Host adaptation.
+ *
+ * The library's stylesheet is written for a web app, where a `button` has no
+ * chrome and an `input[type=range]` has no styling until you give it some.
+ * Obsidian gives both a full appearance — `box-shadow` on every button, its own
+ * slider track and thumb — and `input[type='range']` is an attribute selector,
+ * so it ties on specificity with the library's class and wins on document
+ * order, because theme CSS loads after plugin CSS.
+ *
+ * `!important` is deliberate and confined to this block: it is the only thing
+ * that holds against an arbitrary theme, and the alternative is a specificity
+ * war that a theme can always escalate.
+ * ------------------------------------------------------------------------- */
+
+.ra-player button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none !important;
+  font-family: inherit;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.ra-player button:hover,
+.ra-player button:focus,
+.ra-player button:active {
+  box-shadow: none !important;
+}
+
+/* The library sizes the transport for a web page. Next to Obsidian's own
+   controls, 2.75rem circles read as three filled buttons rather than as
+   punctuation either side of the play control. */
+.ra-player .ra-player__icon {
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+}
+
+/* The blanket button reset above strips the chips' horizontal padding and
+   pill background (a `button` beat the lib's single-class chip rule). The
+   voice chip is a `<select>`, so it was never affected. */
+.ra-player button.ra-player__chip {
+  padding-inline: 0.875rem;
+  background: var(--ra-sunken);
+}
+
+.ra-player button.ra-player__chip:hover {
+  background: color-mix(in oklab, var(--ra-fg) 16%, transparent);
+}
+
+/* The speed chip must not change width as its label changes — "0.75× speed"
+   is longer than "1× speed", and a resizing chip shoves its neighbour aside
+   on every click. Fixed width, centred, tabular digits. */
+.ra-player button.ra-player__chip.ra-player__rate {
+  justify-content: center;
+  min-inline-size: 7.5rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Calm is a state, not a cycle — the chip reads it the way the voice chip
+   reads its current value. Pushed = accent fill, like an active toggle. */
+.ra-player button.ra-player__chip.ra-player__calm[aria-pressed='true'] {
+  background: var(--ra-accent);
+  color: var(--ra-accent-ink);
+}
+
+.ra-player .ra-player__close {
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+}
+
+/* The play control is the progress ring; anything behind it is a second circle
+   competing with the one that carries meaning. */
+.ra-player .ra-player__play,
+.ra-player .ra-player__play:hover {
+  background: transparent !important;
+  border-radius: 999px;
+}
+
+/* Obsidian's button rules carry a fixed height (~30px); the play control is a
+   54px ring and must not be squished into a short hit box that clips it. */
+.ra-player .ra-player__play {
+  inline-size: 3.375rem;
+  block-size: 3.375rem;
+  flex: none;
+}
+
+/* Scrubber: full width, flat, with the library's own geometry restated where
+   Obsidian's slider styling would otherwise apply. */
+.ra-player input[type='range'].ra-player__scrubber {
+  display: block;
+  width: 100% !important;
+  block-size: 1.25rem;
+  margin: 0;
+  padding: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.ra-player input[type='range'].ra-player__scrubber::-webkit-slider-runnable-track {
+  block-size: 0.375rem;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--ra-accent) var(--ra-progress, 0%),
+    var(--ra-sunken) var(--ra-progress, 0%)
+  );
+  box-shadow: none;
+}
+
+/* Centring the thumb on the track is arithmetic, not taste: a 0.875rem thumb on
+   a 0.375rem track needs half the difference lifted off the top, or it sits
+   below the line it is supposed to ride. */
+.ra-player input[type='range'].ra-player__scrubber::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  inline-size: 0.875rem;
+  block-size: 0.875rem;
+  width: 0.875rem;
+  height: 0.875rem;
+  margin-top: -0.25rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ra-accent);
+  box-shadow: none;
+  /* Obsidian offsets its own thumb with `position: relative; top: -6px`;
+     stacked on our margin-top arithmetic that shifts the thumb off the
+     track, which is the scrubbed look that started this. */
+  position: static;
+  top: auto;
+  cursor: pointer;
+}
+
+/* The speaker on a heading. Hidden until the heading is hovered or the button
+   itself is focused: a button on every heading, always visible, turns a document
+   into a control panel. */
+/* Square, and sized here rather than left to the icon: Obsidian's button rules
+   carry padding and a min-height, which stretch a 14px glyph into a tall pill.
+   Same reasoning as the host-adaptation block above, same use of !important. */
+.read-aloud-heading-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  margin-left: 0.3em;
+  padding: 0 !important;
+  min-inline-size: 0 !important;
+  min-block-size: 0 !important;
+  border: 0 !important;
+  border-radius: 999px;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--text-faint);
+  line-height: 1;
+  opacity: 0;
+  vertical-align: middle;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: opacity 120ms ease, color 120ms ease, background-color 120ms ease;
+}
+
+.read-aloud-heading-btn:hover {
+  color: var(--interactive-accent);
+  background: var(--background-modifier-hover) !important;
+}
+
+h1:hover > .read-aloud-heading-btn,
+h2:hover > .read-aloud-heading-btn,
+h3:hover > .read-aloud-heading-btn,
+h4:hover > .read-aloud-heading-btn,
+h5:hover > .read-aloud-heading-btn,
+h6:hover > .read-aloud-heading-btn,
+.read-aloud-heading-btn:focus-visible {
+  opacity: 1;
+}
+
+/* This heading is the one being read. */
+.read-aloud-heading-btn[data-reading='true'] {
+  opacity: 1;
+  color: var(--interactive-accent);
+}
+
+@media print {
+  .ra-player,
+  .read-aloud-heading-btn {
+    display: none;
+  }
+}

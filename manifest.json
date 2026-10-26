@@ -1,0 +1,10 @@
+{
+  "id": "heartkemy-read-aloud",
+  "name": "Heartkemy Read Aloud",
+  "version": "0.1.1",
+  "minAppVersion": "1.4.0",
+  "description": "Manual desktop beta for reading a note, selection, or heading section aloud with local voices.",
+  "author": "Heartkemy",
+  "authorUrl": "https://github.com/Heartkemy/heartkemy-read-aloud",
+  "isDesktopOnly": true
+}
