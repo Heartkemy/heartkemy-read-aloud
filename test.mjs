@@ -13,6 +13,7 @@ import { createRequire } from 'node:module'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
+import { installedRuntime } from './install-runtime.mjs'
 
 const ReadAloudPlugin = createRequire(import.meta.url)('./main.js')
 const { sectionRange, estimateSeconds, formatTime } = ReadAloudPlugin
@@ -34,10 +35,22 @@ try {
   plugin.settings = { libPath: '' }
   assert.equal(plugin.libraryRoot(), library)
   assert.equal(plugin.pythonPath(), python)
+  assert.deepEqual(installedRuntime(pluginDir), { libraryRoot: library, pythonPath: python })
   const configured = path.join(vault, 'custom-library')
   fs.symlinkSync(library, configured, 'dir')
   plugin.settings.libPath = configured
   assert.equal(plugin.libraryRoot(), configured)
+  const settingsFile = path.join(pluginDir, 'data.json')
+  fs.writeFileSync(settingsFile, JSON.stringify({ libPath: configured }))
+  assert.equal(installedRuntime(pluginDir).libraryRoot, configured)
+  const external = path.join(vault, 'legacy-library')
+  fs.mkdirSync(path.join(external, 'src', 'server'), { recursive: true })
+  fs.writeFileSync(path.join(external, 'src', 'server', 'index.js'), '')
+  fs.writeFileSync(settingsFile, JSON.stringify({ libPath: external }))
+  assert.throws(() => installedRuntime(pluginDir), /Library path resolves to .*outside the installed tarball.*Clear the saved Library path/)
+  assert.equal(JSON.parse(fs.readFileSync(settingsFile, 'utf8')).libPath, external)
+  fs.writeFileSync(settingsFile, JSON.stringify({ libPath: path.join(vault, 'missing-library') }))
+  assert.equal(installedRuntime(pluginDir).libraryRoot, library)
   plugin.manifest.dir = pluginDir
   assert.equal(plugin.dir(), pluginDir)
   delete plugin.manifest.dir

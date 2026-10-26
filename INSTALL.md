@@ -7,7 +7,9 @@ owner's active vault.
 
 ## Prerequisites
 
-- macOS with Obsidian desktop and Node 18 or later.
+- macOS with Obsidian desktop. For the build below, use Node `20.19.6` with
+  npm `10.8.2`; Node `26.5.0` with npm `11.17.0` also passed install, tests,
+  build, and packing for the pinned artifact. Other combinations are unverified.
 - Git and enough disk space for the optional neural environment and model.
 - Apple Silicon only for the optional Kokoro neural voice. macOS `say` voices
   are the basic smoke-test path on any supported Mac.
@@ -86,7 +88,14 @@ node test-install.mjs
 cp examples/synthetic-install-note.md "$vault/synthetic-install-note.md"
 ```
 
-`test-install.mjs` checks the installed tarball, the sidecar's fd-3 handshake,
+`test-install.mjs` reads the saved `data.json` settings and uses the plugin's
+production resolver to check the actual library path. It rejects a valid
+external **Library path** override, even if that checkout has the same package
+version. Clear that setting and rerun the check to validate the plugin-local
+tarball; the check never changes your settings. A symlink to that same installed
+package is accepted.
+
+It also checks the installed tarball, the sidecar's fd-3 handshake,
 the exact `app://obsidian.md` origin, loopback-only rejection, a synthetic
 macOS `say` render, cache permissions, and shutdown. It uses temporary cache
 data and does not read vault content. It requires the optional venv from step

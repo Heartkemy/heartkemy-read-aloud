@@ -15,10 +15,11 @@ import os from 'node:os'
 import path from 'node:path'
 import readline from 'node:readline'
 import { fileURLToPath } from 'node:url'
+import { installedRuntime } from './install-runtime.mjs'
 
 const pluginRoot = path.dirname(fileURLToPath(import.meta.url))
-const libraryRoot = path.join(pluginRoot, 'node_modules', '@athanor-code', 'read-aloud')
-const pythonPath = path.join(pluginRoot, '.venv', 'read-aloud', 'bin', 'python')
+const { libraryRoot, pythonPath } = installedRuntime(pluginRoot)
+assert.ok(pythonPath, 'missing plugin-local Python; follow INSTALL.md step 3 first')
 const sidecar = path.join(pluginRoot, 'sidecar.cjs')
 const appOrigin = 'app://obsidian.md'
 
@@ -37,6 +38,7 @@ assert.equal(manifest.isDesktopOnly, true)
 const libraryPackage = JSON.parse(fs.readFileSync(path.join(libraryRoot, 'package.json'), 'utf8'))
 assert.equal(libraryPackage.name, '@athanor-code/read-aloud')
 assert.equal(libraryPackage.version, '0.1.0')
+console.log(`installed library: ${libraryRoot}`)
 
 function waitForReady(child) {
   return new Promise((resolve, reject) => {
