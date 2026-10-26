@@ -19,7 +19,7 @@ Choose an empty working directory outside the vault:
 ```sh
 workdir="$(mktemp -d "${TMPDIR:-/tmp}/read-aloud-beta.XXXXXX")"
 library="$workdir/read-aloud"
-library_commit="79a52c466115bf3472b2cc343c43f793ad5b5d7e"
+library_commit="db15cb941188f90946cd5ee2a8a8549e8cd1a083"
 
 git clone --no-checkout https://github.com/Heartkemy/read-aloud.git "$library"
 git -C "$library" checkout --detach "$library_commit"
