@@ -11,7 +11,7 @@ Node 18 or later is required. The source-only checks need no dependencies:
 ```sh
 node --check main.js
 node --check sidecar.cjs
-node test.mjs
+npm test
 ```
 
 For a change affecting setup or the sidecar, follow the disposable-vault flow

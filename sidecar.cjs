@@ -33,6 +33,11 @@ const { pathToFileURL } = require('url')
 const [, , libPath, cacheDir, defaultVoice, allowedOrigin, pythonPath, warmOnLoad] = process.argv
 
 async function main() {
+  // The normalizer checks PYTHON3 first; the explicit plugin venv must win.
+  if (pythonPath) {
+    process.env.READ_ALOUD_PYTHON3 = pythonPath
+    process.env.READ_ALOUD_PYTHON = pythonPath
+  }
   const entry = path.join(libPath, 'src', 'server', 'index.js')
   if (!fs.existsSync(entry)) {
     throw new Error(`no read-aloud library at ${entry} — check the library path in settings`)

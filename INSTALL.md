@@ -8,7 +8,7 @@ owner's active vault.
 ## Prerequisites
 
 - macOS with Obsidian desktop. For the build below, use Node `20.19.6` with
-  npm `10.8.2`; Node `26.5.0` with npm `11.17.0` also passed install, tests,
+  npm `10.8.2`; Node `26.12.1` with npm `11.20.0` also passed install, tests,
   build, and packing for the pinned artifact. Other combinations are unverified.
 - Git and enough disk space for the optional neural environment and model.
 - Apple Silicon only for the optional Kokoro neural voice. macOS `say` voices
@@ -73,6 +73,8 @@ READ_ALOUD_PYTHON="$PWD/.venv/read-aloud/bin/python" \
 
 The plugin gives its sidecar that exact `READ_ALOUD_PYTHON` path when the venv
 exists, so a Finder-launched Obsidian does not rely on inheriting shell state.
+The sidecar also overrides inherited `READ_ALOUD_PYTHON3` for the normalizer
+when this local venv is present. This affects only the sidecar process.
 Opening the plugin only inventories voices; the first actual `kokoro:`
 synthesis downloads the model. The dependency import above deliberately does
 not. Leave **Pre-render the note you open** off for a playback-only download;
@@ -83,7 +85,7 @@ enabling that option makes opening a note count as synthesis.
 From the plugin directory:
 
 ```sh
-node test.mjs
+npm test
 node test-install.mjs
 cp examples/synthetic-install-note.md "$vault/synthetic-install-note.md"
 ```
@@ -95,11 +97,18 @@ version. Clear that setting and rerun the check to validate the plugin-local
 tarball; the check never changes your settings. A symlink to that same installed
 package is accepted.
 
-It also checks the installed tarball, the sidecar's fd-3 handshake,
-the exact `app://obsidian.md` origin, loopback-only rejection, a synthetic
+It also asserts the plugin-local Python path and runs a synthetic Markdown
+normalization through that interpreter, then checks the installed tarball,
+the sidecar's fd-3 handshake, the exact `app://obsidian.md` origin,
+loopback-only rejection, a synthetic
 macOS `say` render, cache permissions, and shutdown. It uses temporary cache
 data and does not read vault content. It requires the optional venv from step
 3 because the normalizer is part of the installed runtime.
+
+These checks do not download or load the Kokoro model, test real neural
+synthesis, or establish physical speaker audibility. Startup options are
+checked with a synthetic service; model download on first synthesis is the
+configured behavior, not a newly verified cold-model run.
 
 ## 5. Cold desktop check
 

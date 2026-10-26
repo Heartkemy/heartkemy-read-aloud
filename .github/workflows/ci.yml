@@ -19,4 +19,4 @@ jobs:
           node-version: 20
       - run: node --check main.js
       - run: node --check sidecar.cjs
-      - run: node test.mjs
+      - run: npm test

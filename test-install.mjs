@@ -14,7 +14,7 @@ import http from 'node:http'
 import os from 'node:os'
 import path from 'node:path'
 import readline from 'node:readline'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { installedRuntime } from './install-runtime.mjs'
 
 const pluginRoot = path.dirname(fileURLToPath(import.meta.url))
@@ -39,6 +39,19 @@ const libraryPackage = JSON.parse(fs.readFileSync(path.join(libraryRoot, 'packag
 assert.equal(libraryPackage.name, '@athanor-code/read-aloud')
 assert.equal(libraryPackage.version, '0.1.0')
 console.log(`installed library: ${libraryRoot}`)
+console.log(`installed Python: ${pythonPath}`)
+
+const { createNormalizer } = await import(pathToFileURL(path.join(libraryRoot, 'src', 'server', 'normalizer.js')).href)
+const normalizer = createNormalizer({ pythonPath })
+try {
+  assert.equal(fs.realpathSync(normalizer.pythonPath), fs.realpathSync(pythonPath))
+  assert.ok(normalizer.available(), 'installed markdown normalizer is unavailable')
+  const normalized = await normalizer.normalize('**Synthetic** normalizer check.')
+  assert.equal(normalized.text, 'Synthetic normalizer check.')
+  assert.deepEqual(normalized.leaks, [])
+} finally {
+  normalizer.stop()
+}
 
 function waitForReady(child) {
   return new Promise((resolve, reject) => {

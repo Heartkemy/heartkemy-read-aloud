@@ -15,7 +15,7 @@ checkout, then installed into this plugin folder. Nothing is published to npm.
 
 - macOS desktop Obsidian only. `isDesktopOnly` is intentional because the
   plugin starts a local Node sidecar.
-- Node 18 or newer for the sidecar and local package install.
+- A tested Node/npm combination from [INSTALL.md](INSTALL.md).
 - macOS `say` voices work without a neural-model download.
 - The optional Kokoro voice needs Apple Silicon and the plugin-local Python
   environment described in [INSTALL.md](INSTALL.md). Its model downloads on
@@ -68,11 +68,12 @@ The source-only checks need no package install:
 ```sh
 node --check main.js
 node --check sidecar.cjs
-node test.mjs
+npm test
 ```
 
 After following the local-tarball setup, run `node test-install.mjs`. It starts
-the sidecar against the installed package, verifies the approved app origin and
+the sidecar against the installed package, verifies plugin-local Python and
+Markdown normalization, the approved app origin and
 loopback rejection, synthesizes one synthetic `say` clip, and verifies clean
 shutdown/cache permissions. It does not prove Obsidian's visual UI; use the
 disposable-vault check in [INSTALL.md](INSTALL.md) for that.
